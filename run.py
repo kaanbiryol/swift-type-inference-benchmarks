@@ -11,73 +11,43 @@ func doSomething(viewModel: ViewModel) -> String {
 }
 """
 
-VIEW_MODEL_OVERLOAD_PRELUDE = """
-struct ViewModel {
+BOX_OVERLOAD_PRELUDE = """
+struct IntBox {
     let value: Int
-    let name: String
 }
-struct PreviewViewModel {
+
+struct ShortBox {
     let value: Int
-    let name: String
 }
-struct LegacyViewModel {
+
+struct DecimalBox {
     let value: Int
-    let name: String
 }
-func score(_ model: ViewModel) -> Int {
-    return model.value
+
+func read(_ box: IntBox) -> Int {
+    return box.value
 }
-func score(_ model: PreviewViewModel) -> Int16 {
-    return Int16(model.value)
+
+func read(_ box: ShortBox) -> Int16 {
+    return Int16(box.value)
 }
-func score(_ model: LegacyViewModel) -> Double {
-    return Double(model.value)
+
+func read(_ box: DecimalBox) -> Double {
+    return Double(box.value)
 }
 """
 
-AMBIGUOUS_INIT_PRELUDE = """
-struct IntPayload {
+CLOSURE_MODEL_PRELUDE = """
+struct Cell {
     let value: Int
-    let name: String
+    let label: String
 }
-struct Int8Payload {
-    let value: Int
-    let name: String
+
+func renderCells(_ cells: [Cell]) -> Int {
+    return cells.count
 }
-struct Int16Payload {
-    let value: Int
-    let name: String
-}
-struct Int32Payload {
-    let value: Int
-    let name: String
-}
-struct Int64Payload {
-    let value: Int
-    let name: String
-}
-struct DoublePayload {
-    let value: Int
-    let name: String
-}
-func choose(_ payload: IntPayload) -> Int {
-    return payload.value
-}
-func choose(_ payload: Int8Payload) -> Int8 {
-    return Int8(payload.value)
-}
-func choose(_ payload: Int16Payload) -> Int16 {
-    return Int16(payload.value)
-}
-func choose(_ payload: Int32Payload) -> Int32 {
-    return Int32(payload.value)
-}
-func choose(_ payload: Int64Payload) -> Int64 {
-    return Int64(payload.value)
-}
-func choose(_ payload: DoublePayload) -> Double {
-    return Double(payload.value)
-}
+
+let numbers = [1, 2, 3, 4, 5]
 """
 
 OVERLOADED_INIT_PRELUDE = """
@@ -160,35 +130,35 @@ EXAMPLES = {
             ),
         ],
     },
-    "overloaded-payload-init": {
-        "summary": "shorthand .init while resolving overloaded payload/result types",
-        "prelude": AMBIGUOUS_INIT_PRELUDE,
+    "overloaded-box-init": {
+        "summary": "shorthand .init while resolving overloaded box-read calls",
+        "prelude": BOX_OVERLOAD_PRELUDE,
         "variants": [
             (
-                "explicit initializer in numeric overload",
+                "explicit IntBox initializer",
                 "a",
-                'let a{} = choose(IntPayload(value: 1, name: "test")) + choose(IntPayload(value: 2, name: "test")) + 1',
+                "let a{} = read(IntBox(value: 1)) + read(IntBox(value: 2)) + 1",
             ),
             (
-                "shorthand .init in numeric overload",
+                "shorthand .init IntBox",
                 "b",
-                'let b{} = choose(.init(value: 1, name: "test")) + choose(.init(value: 2, name: "test")) + 1',
+                "let b{} = read(.init(value: 1)) + read(.init(value: 2)) + 1",
             ),
         ],
     },
-    "overloaded-model-init": {
-        "summary": "shorthand .init in overloaded model scoring calls",
-        "prelude": VIEW_MODEL_OVERLOAD_PRELUDE,
+    "closure-flatmap-many-init": {
+        "summary": "shorthand .init inside a larger array returned from flatMap",
+        "prelude": CLOSURE_MODEL_PRELUDE,
         "variants": [
             (
-                "explicit ViewModel initializer",
+                "explicit Cell initializers in flatMap",
                 "a",
-                'let a{} = score(ViewModel(value: 1, name: "test")) + score(ViewModel(value: 2, name: "test")) + 1',
+                'let a{} = renderCells(numbers.flatMap {{ [Cell(value: $0, label: "\\($0)"), Cell(value: $0 + 1, label: "\\($0 + 1)"), Cell(value: $0 + 2, label: "\\($0 + 2)"), Cell(value: $0 + 3, label: "\\($0 + 3)")] }})',
             ),
             (
-                "shorthand .init ViewModel",
+                "shorthand .init in flatMap",
                 "b",
-                'let b{} = score(.init(value: 1, name: "test")) + score(.init(value: 2, name: "test")) + 1',
+                'let b{} = renderCells(numbers.flatMap {{ [.init(value: $0, label: "\\($0)"), .init(value: $0 + 1, label: "\\($0 + 1)"), .init(value: $0 + 2, label: "\\($0 + 2)"), .init(value: $0 + 3, label: "\\($0 + 3)")] }})',
             ),
         ],
     },
