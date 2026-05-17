@@ -49,10 +49,10 @@ xcrun swiftc -typecheck <file>.swift
 
 | Benchmark | What it exercises |
 | --- | --- |
-| `contextual-init` | Shorthand `.init` passed to a function with a concrete argument type. |
+| `contextual-init` | Inferred `.init` passed to a function with a concrete argument type. |
 | `flatmap-chain` | Closure parameter and return inference through `flatMap` and `reduce`. |
-| `overloaded-payload-init` | Shorthand `.init` while choosing among overloaded payload/result types. |
-| `overloaded-model-init` | Shorthand `.init` in overloaded model scoring calls. |
+| `overloaded-payload-init` | Inferred `.init` while choosing among overloaded payload/result types. |
+| `overloaded-model-init` | Inferred `.init` in overloaded model scoring calls. |
 | `overloaded-inits` | One nominal type with several initializer overloads. |
 | `overloaded-literals` | Overloaded array and numeric literals. |
 
@@ -60,17 +60,17 @@ xcrun swiftc -typecheck <file>.swift
 
 These results are from one local run. They are useful for comparing the benchmark variants on this machine, but they are not universal Swift performance rules.
 
-Benchmark protocol:
+### Benchmark Protocol
 
 ```sh
 python3 run.py <benchmark_name> 300 --warmup 1 --runs 10
 ```
 
-Environment:
+### Environment
 
 | Field | Value |
 | --- | --- |
-| Date | 2026-05-14 |
+| Date | 2026-05-17 |
 | Machine | Apple M1 Pro |
 | CPU count | 8 |
 | Memory | 32 GiB |
@@ -79,13 +79,15 @@ Environment:
 | Target | `arm64-apple-macosx26.0` |
 | hyperfine | 1.19.0 |
 
-Results:
+### Results
 
-Rows are included only for benchmarks that were run under this protocol.
+All benchmark rows below were run under this protocol.
 
-| Benchmark | Inferred / shorthand | Explicit | Result |
+| Benchmark | Inferred | Explicit | Result |
 | --- | --- | --- | --- |
-| `contextual-init` | `doSomething(viewModel: .init(...))` — 151.5 ms | `doSomething(viewModel: ViewModel(...))` — 167.5 ms | Inferred was 1.11x faster. |
-| `flatmap-chain` | inferred `flatMap` closure/result — 3.829 s | explicit closure/result types — 391.0 ms | Explicit was 9.79x faster. |
-| `overloaded-payload-init` | shorthand `.init` in overloaded expression — 5.650 s | explicit `IntPayload(...)` — 346.1 ms | Explicit was 16.33x faster. |
-| `overloaded-model-init` | `score(.init(...))` — 1.392 s | `score(ViewModel(...))` — 320.5 ms | Explicit was 4.34x faster. |
+| `contextual-init` | `doSomething(viewModel: .init(...))` — 152.3 ms | `doSomething(viewModel: ViewModel(...))` — 174.2 ms | Inferred was 1.14x faster. |
+| `flatmap-chain` | inferred `flatMap` closure/result — 3.649 s | explicit closure/result types — 378.9 ms | Explicit was 9.63x faster. |
+| `overloaded-payload-init` | inferred `.init` in overloaded expression — 4.776 s | explicit `IntPayload(...)` — 344.8 ms | Explicit was 13.85x faster. |
+| `overloaded-model-init` | `score(.init(...))` — 1.445 s | `score(ViewModel(...))` — 312.3 ms | Explicit was 4.63x faster. |
+| `overloaded-inits` | inferred `.init` with overloaded initializers — 316.0 ms | explicit `Quantity(Int(...))` — 417.5 ms | Inferred was 1.32x faster. |
+| `overloaded-literals` | inferred overloaded array literals — 300.0 ms | explicit `Int` array literals — 403.2 ms | Inferred was 1.34x faster. |
